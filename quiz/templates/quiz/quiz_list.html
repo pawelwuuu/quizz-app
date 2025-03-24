@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Section Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold text-gray-800 mb-3">Latest Quizzes</h1>
+        <p class="text-lg text-gray-600">Choose one of our quizzes and test your knowledge!</p>
+    </div>
+
+    <!-- Quiz Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for quiz in quizzes %}
+        <a href="/{{quiz.id}}" class="group">
+            <div class="bg-white rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 h-full flex flex-col">
+                <!-- Content -->
+                <div class="p-6 flex-grow">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors">
+                        {{quiz.title}}
+                    </h3>
+                    <div class="text-sm text-gray-600 mt-2">
+                        Created by: {{ quiz.created_by.username }}
+                    </div>
+                    <p class="text-gray-600 mb-4">{{quiz.description}}</p>
+                    <div class="flex items-center text-sm text-gray-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Duration: {{ quiz.duration }} min
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-6 py-4 bg-gray-50">
+                    <div class="text-sm text-gray-600">
+                        <span class="font-medium">{{quiz.questions.count}}</span> questions
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

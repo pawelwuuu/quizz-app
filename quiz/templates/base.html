@@ -1,0 +1,53 @@
+{% load static tailwind_tags %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% tailwind_css %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App</title>
+</head>
+<body>
+    <div class="min-h-screen flex flex-col">
+    <header class='text-xl shadow mb-3 bg-gray-100'>
+        <nav class="flex items-center">
+            <ul class="flex space-x-8 p-4 font-bold">
+                <li><a href="/" class="hover:text-blue-800 transition-all hover:text-lg">Home</a></li>
+                <li><a href="/quizzes" class="hover:text-blue-800 transition-all hover:text-lg">Browse Quizzes</a></li>
+                <li><a href="/contact" class="hover:text-blue-800 transition-all hover:text-lg">Contact</a></li>
+                {% if user.is_authenticated %}
+                <li><a href="/create-quiz" class="hover:text-blue-800 transition-all hover:text-lg">Create Quiz</a></li>
+                <li><a href="{% url 'my_quizzes' %}" class="hover:text-blue-800 transition-all hover:text-lg">My quizzes</a></li>
+                {% endif %}
+            </ul>
+
+            <div class='ml-auto mr-4 text-right text-sm'>
+                {% if user.is_authenticated %}
+                <p class='text-xl'>Welcome, {{ user.username }}!</p>
+                <form action="{% url 'logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="hover:text-blue-800 transition-all">Log out</button>
+                </form>
+                {% else %}
+                <div class='flex space-x-2 text-lg'>
+                    <a href="{% url 'login' %}" class="border rounded-lg p-2 bg-blue-600 text-white hover:bg-blue-500 transition-colors">Log in</a>
+                    <a href="{% url 'signup' %}" class="border rounded-md p-2 bg-blue-800 text-white hover:bg-blue-700 transition-colors">Sign up</a>
+                </div>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <main class='flex-grow'>
+        {% block content %}
+
+        {% endblock %}
+    </main>
+
+    <footer class='bg-gray-50 p-2'>
+        <p>&copy; 2025 QuizApp.</p>
+    </footer>
+    </div>
+</body>
+</html>

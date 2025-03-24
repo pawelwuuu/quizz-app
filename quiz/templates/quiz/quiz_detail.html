@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+    <div class="w-[80%] mx-auto shadow-xl rounded-lg mt-3 bg-gray-50 p-4">
+        <div class='w-full bg-gray-800 text-white rounded-xl p-2'>
+            <p class="text-4xl font-bold">{{ quiz.title }}</h1>
+            <div class="text-sm">
+                Created by: {{ quiz.created_by.username }}
+            </div>
+            <p class="text-xl mt-1">{{ quiz.description }}</p>
+        </div>
+        <form method="post" class="p-4">
+            {% csrf_token %}
+            {% for question in questions %}
+              <fieldset>
+                  <legend class="text-xl font-semibold mb-2">{{ question.text }}</legend>
+                  {% if question.correct > 1 %}
+                      {% for answer in question.answers %}
+                          <label>
+                              <input type="checkbox" name="question_{{ question.id }}" value="{{ answer.id }}">
+                              <p class="text-lg inline-block text-gray-800">{{ answer.text }}</p> 
+                          </label><br>
+                      {% endfor %}
+                  {% else %}
+                      {% for answer in question.answers %}
+                          <label>
+                              <input type="radio" name="question_{{ question.id }}" value="{{ answer.id }}">
+                              <p class="text-lg inline-block text-gray-800">{{ answer.text }}</p> 
+                          </label><br>
+                      {% endfor %}
+                  {% endif %}
+              </fieldset>
+              <hr class="mt-1">
+          {% endfor %}
+          
+          
+           <button type="submit" class="bg-gray-800 text-white px-3 py-1 rounded-full mt-2 text-lg">Check answers</button>
+          </form>
+    </div>
+{% endblock %}

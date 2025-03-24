@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load static %}
+
+<div class="w-[80%] mx-auto shadow-xl rounded-lg mt-3 bg-gray-50 p-4">
+    <div class='w-full bg-gray-800 text-white rounded-xl p-4 mb-6'>
+        <h1 class="text-4xl font-bold">Your Score: <span class="text-green-400">{{ score }}</span></h1>
+    </div>
+
+    {% for question in quiz_data %}
+    <div class="mb-8 p-4 bg-white rounded-lg shadow-md">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-xl font-semibold text-gray-800">{{ question.text }}</h3>
+            {% if question.user_answer.correct %}
+            <span class="bg-green-500 text-white px-3 py-1 rounded-full text-sm">Correct!</span>
+            {% else %}
+            <span class="bg-red-600 text-white px-3 py-1 rounded-full text-sm">Wrong!</span>
+            {% endif %}
+        </div>
+
+        <div class="space-y-2">
+            {% for answer in question.answers %}
+            <div class="{% if answer.is_correct and answer.id in question.user_answer.user_answers %}bg-green-800
+                        {% elif answer.is_correct %}bg-green-500
+                        {% elif answer.id in question.user_answer.user_answers %}bg-red-600
+                        {% else %}bg-gray-100 !text-black
+                        {% endif %} 
+                     p-3 rounded-lg transition-all duration-200 text-white">
+                {{ answer.text }}
+                {% if answer.is_correct and answer.id not in question.user_answer.user_answers %}
+                <span class="ml-2 text-sm opacity-75">(Correct Answer)</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+    <div class="mt-6 text-center">
+        <a href="/" class="bg-gray-800 text-white px-6 py-2 rounded-full text-lg hover:bg-gray-700 transition-colors">
+            Return to Home Page
+        </a>
+    </div>
+</div>
+
+{% endblock %}
