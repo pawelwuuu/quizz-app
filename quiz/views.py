@@ -4,13 +4,59 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.views.decorators.csrf import csrf_exempt
 import json
-from django.views.generic import TemplateView
-from django.views.generic.edit import FormView
-from django.urls import reverse_lazy
 from .forms import ContactForm
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q 
+from django.http import HttpResponse
+
+def quiz_delete(request, quiz_id):
+    quiz = get_object_or_404(Quiz, id=quiz_id)
+    quiz.delete()
+
+    return redirect('my_quizzes')
+
+def quiz_edit(request, quiz_id):
+    if request.method == 'POST':
+        answers = {}
+        for key, value in request.POST.items():
+            splitted_key = key.split('-')
+
+            if splitted_key[0] == 'q':
+                Question.objects.filter(id=splitted_key[1]).update(text=value)
+
+            if splitted_key[0] == 'a':
+                answer = Answer.objects.get(id=splitted_key[1])
+                answer.text = value
+                answers[splitted_key[1]] = answer
+
+            if splitted_key[0] == 'c':
+                if value == "off":
+                    answers[splitted_key[1]].is_correct = False
+                elif value == "on":
+                    answers[splitted_key[1]].is_correct = True
+
+        for answer in answers.values():
+            answer.save()
+
+        return redirect('quiz_detail', pk=quiz_id)
+
+    quiz = Quiz.objects.get(id=quiz_id)
+
+    quiz_data = []
+    for question in quiz.questions.all():
+        question_dict = {}
+        question_dict['text'] = question.text
+        question_dict['answers'] = list(question.answers.all())
+        question_dict['correct'] = question.answers.filter(is_correct=True).count()
+        question_dict['id'] = question.id
+        
+        quiz_data.append(question_dict)
+
+    print(quiz_data)    
+
+    return render(request, 'quiz/quiz_edit.html', {"quiz_data": quiz_data, "name": quiz.title})
+
 
 def quiz_list(request):
     quizzes = list(Quiz.objects.all())

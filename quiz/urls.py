@@ -9,4 +9,6 @@ urlpatterns = [
     path('contact/', contact_view, name='contact'),
     path('my-quizzes/', my_quizzes, name='my_quizzes'),
     path('quizzes/', quiz_search, name='quiz_search'),
+    path('edit/<int:quiz_id>/', quiz_edit, name='edit_quiz'),
+    path('delete/<int:quiz_id>/', quiz_delete, name='delete_quiz'),
 ]
