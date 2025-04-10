@@ -19,6 +19,7 @@
                 {% if user.is_authenticated %}
                 <li><a href="/create-quiz" class="hover:text-blue-800 transition-all hover:text-lg">Create Quiz</a></li>
                 <li><a href="{% url 'my_quizzes' %}" class="hover:text-blue-800 transition-all hover:text-lg">My quizzes</a></li>
+                <li><a href="{% url 'notifications' %}" class="hover:text-blue-800 transition-all hover:text-lg">Notifications</a></li>
                 {% endif %}
             </ul>
 

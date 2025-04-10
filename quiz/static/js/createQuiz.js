@@ -97,6 +97,10 @@ document.getElementById("question_form_main").addEventListener("submit", functio
         formBody.correctAnswers.push(correctAnswers);
     }
 
+    formBody.category_id = formData.get("category");
+    formBody.difficulty = formData.get("difficulty");
+
+
     fetch("/create-quiz/", {
         method: "POST",
         headers: {

@@ -3,26 +3,51 @@
 {% block content %}
 <div class="container mx-auto px-4 py-8">
     <!-- Wyszukiwarka -->
-    <div class="mb-12 max-w-2xl mx-auto">
-        <form method="get" class="flex gap-4">
+    <div class="mb-12 max-w-7xl mx-auto">
+        <form method="get" class="flex flex-wrap items-center gap-4 justify-between">
+            <!-- Search bar -->
             <input 
                 type="text" 
                 name="q" 
                 value="{{ search_query }}"
                 placeholder="Search quizzes..."
-                class="flex-1 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                class="flex-grow min-w-[200px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
             >
+    
+            <!-- Category select -->
+            <select name="category" class="min-w-[180px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                        {{ cat.name }}
+                    </option>
+                {% endfor %}
+            </select>
+    
+            <!-- Difficulty select -->
+            <select name="difficulty" class="min-w-[180px] p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">All Difficulties</option>
+                {% for value, label in difficulties %}
+                    <option value="{{ value }}" {% if value == selected_difficulty %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+    
+            <!-- Search button -->
             <button 
                 type="submit" 
-                class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
                 Search
             </button>
         </form>
-        <p class="mt-4 text-gray-600 text-center">
-            Found {{ total_results }} results{% if search_query %} for "{{ search_query }}"{% endif %}
+    
+        <p class="mt-6 text-gray-600 text-center text-sm">
+            Found {{ total_results }} results{% if search_query %} for "<strong>{{ search_query }}</strong>"{% endif %}
         </p>
     </div>
+    
 
     <!-- Lista wyników -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -50,40 +75,42 @@
 
     <!-- Paginacja -->
     {% if page_obj.has_other_pages %}
-    <div class="mt-12 flex justify-center">
-        <nav class="flex space-x-2">
-            {% if page_obj.has_previous %}
-            <a 
-                href="?page={{ page_obj.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" 
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-                Previous
-            </a>
-            {% endif %}
-
-            {% for num in page_obj.paginator.page_range %}
-            {% if page_obj.number == num %}
-            <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">{{ num }}</span>
-            {% else %}
-            <a 
-                href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}" 
-                class="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100"
-            >
-                {{ num }}
-            </a>
-            {% endif %}
-            {% endfor %}
-
-            {% if page_obj.has_next %}
-            <a 
-                href="?page={{ page_obj.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" 
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-                Next
-            </a>
-            {% endif %}
-        </nav>
-    </div>
+        <div class="mt-12 flex justify-center">
+            <nav class="flex space-x-2">
+                {% if page_obj.has_previous %}
+                <a 
+                    href="?page={{ page_obj.previous_page_number }}&q={{ search_query }}&category={{ selected_category }}&difficulty={{ selected_difficulty }}" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                    Previous
+                </a>
+                {% endif %}
+            
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <span class="px-4 py-2 bg-blue-600 text-white rounded-lg">{{ num }}</span>
+                    {% else %}
+                    <a 
+                        href="?page={{ num }}&q={{ search_query }}&category={{ selected_category }}&difficulty={{ selected_difficulty }}" 
+                        class="px-4 py-2 bg-white text-gray-700 rounded-lg hover:bg-gray-100"
+                    >
+                        {{ num }}
+                    </a>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <a 
+                    href="?page={{ page_obj.next_page_number }}&q={{ search_query }}&category={{ selected_category }}&difficulty={{ selected_difficulty }}" 
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                    Next
+                </a>
+                {% endif %}
+            </nav>
+        </div>
     {% endif %}
+
+    
 </div>
 {% endblock %}

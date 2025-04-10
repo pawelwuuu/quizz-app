@@ -24,6 +24,28 @@
                 class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent"></textarea>
         </div>
 
+        <div class="space-y-2">
+            <label for="category" class="block text-lg font-semibold text-gray-800">Category:</label>
+            <select id="category" name="category" required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent">
+                <option value="" disabled selected>Select category</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}">{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="space-y-2">
+            <label for="difficulty" class="block text-lg font-semibold text-gray-800">Difficulty:</label>
+            <select id="difficulty" name="difficulty" required
+                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-800 focus:border-transparent">
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+        </div>
+        
+
         <div id="question_form" class="space-y-6"></div>
 
         <div class="flex items-center gap-4">

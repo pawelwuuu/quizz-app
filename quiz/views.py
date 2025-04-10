@@ -1,23 +1,49 @@
-from django.shortcuts import render, get_object_or_404
-from .models import Quiz, Question, Answer
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm
-from django.views.decorators.csrf import csrf_exempt
 import json
-from .forms import ContactForm
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse, HttpResponseServerError
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 from django.core.paginator import Paginator
-from django.db.models import Q 
-from django.http import HttpResponse
+from django.db.models import Q
+
+from .models import Quiz, Question, Answer, DifficultyLevel, Category, Notification
+from .forms import ContactForm
+
+@login_required
+def notifications_page(request):
+    notifications = Notification.objects.filter(
+        user=request.user
+    ).order_by('-created_at')
+    return render(request, 'quiz/notifications.html', {'notifications': notifications})
 
 def quiz_delete(request, quiz_id):
     quiz = get_object_or_404(Quiz, id=quiz_id)
+
+    if quiz.created_by != request.user:
+        return HttpResponseServerError("No permissions.")
+
     quiz.delete()
 
     return redirect('my_quizzes')
 
 def quiz_edit(request, quiz_id):
+    quiz = Quiz.objects.get(id=quiz_id)
+    if quiz.created_by != request.user:
+        return HttpResponseServerError("No permissions.")
+
     if request.method == 'POST':
+
+        category_id = request.POST.get('category')
+        difficulty = request.POST.get('difficulty')
+
+        if category_id:
+            quiz.category = Category.objects.get(id=category_id)
+        if difficulty in DifficultyLevel.values:
+            quiz.difficulty = difficulty
+        quiz.save()
+
         answers = {}
         for key, value in request.POST.items():
             splitted_key = key.split('-')
@@ -41,8 +67,6 @@ def quiz_edit(request, quiz_id):
 
         return redirect('quiz_detail', pk=quiz_id)
 
-    quiz = Quiz.objects.get(id=quiz_id)
-
     quiz_data = []
     for question in quiz.questions.all():
         question_dict = {}
@@ -53,13 +77,20 @@ def quiz_edit(request, quiz_id):
         
         quiz_data.append(question_dict)
 
-    print(quiz_data)    
+    categories = Category.objects.all()
+    difficulties = DifficultyLevel.choices
 
-    return render(request, 'quiz/quiz_edit.html', {"quiz_data": quiz_data, "name": quiz.title})
+    return render(request, 'quiz/quiz_edit.html', {
+    "quiz_data": quiz_data,
+    "name": quiz.title,
+    "quiz": quiz,
+    "categories": categories,
+    "difficulties": difficulties,
+    })
 
 
 def quiz_list(request):
-    quizzes = list(Quiz.objects.all())
+    quizzes = list(Quiz.objects.order_by('-created_at')[:9])
     for quiz in quizzes:
         quiz.duration = quiz.questions.count() * 1.5
     return render(request, 'quiz/quiz_list.html', {'quizzes': quizzes})
@@ -116,12 +147,6 @@ def quiz_detail(request, pk):
         'questions': quiz_data
     })  
 
-
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import json
-from .models import Quiz, Question, Answer
-
 @login_required
 def my_quizzes(request):
     quizzes = Quiz.objects.filter(created_by=request.user).order_by('-created_at')
@@ -138,11 +163,20 @@ def create_quiz(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            
-            # Tworzenie quizu
+
+            category_id = data.get('category_id')
+            difficulty = data.get('difficulty')
+
+            category = Category.objects.get(id=category_id)
+
+            if difficulty not in DifficultyLevel.values:
+                return JsonResponse({'status': 'error', 'message': 'Invalid difficulty level'}, status=400)
+
             quiz = Quiz.objects.create(
                 title=data['title'],
                 description=data['description'],
+                category=category,
+                difficulty=difficulty,
                 created_by=request.user
             )
 
@@ -152,13 +186,9 @@ def create_quiz(request):
                     text=question_text
                 )
 
-                # Pobieranie odpowiedzi dla tego pytania
                 question_answers = data['answers'][question_index]
-                
-                # Pobieranie poprawnych odpowiedzi (indeksy jako stringi, konwertujemy na int)
                 correct_indices = [int(idx) for idx in data['correctAnswers'][question_index]]
 
-                # Tworzenie odpowiedzi
                 for answer_index, answer_text in enumerate(question_answers):
                     Answer.objects.create(
                         question=question,
@@ -167,33 +197,50 @@ def create_quiz(request):
                     )
 
             return JsonResponse({'status': 'success', 'message': 'Quiz created!'})
-        
+
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
-    return render(request, 'quiz/create_quiz.html')
+
+    # GET method — render template with categories
+    categories = Category.objects.all()
+    return render(request, 'quiz/create_quiz.html', {'categories': categories})
 
 def quiz_search(request):
     search_query = request.GET.get('q', '')
+    selected_category = request.GET.get('category')
+    selected_difficulty = request.GET.get('difficulty')
     page_number = request.GET.get('page', 1)
 
-    # Wyszukiwanie
-    if search_query:
-        quizzes = Quiz.objects.filter(
-            Q(title__icontains=search_query) | 
-            Q(description__icontains=search_query)
-        ).order_by('-created_at')
-    else:
-        quizzes = Quiz.objects.all().order_by('-created_at')
+    quizzes = Quiz.objects.all()
 
-    # Paginacja
-    paginator = Paginator(quizzes, 10)  # 10 quizów na stronę
+    # Filtrowanie po tytule/opisie
+    if search_query:
+        quizzes = quizzes.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+
+    # Filtrowanie po kategorii
+    if selected_category and selected_category.isdigit():
+        quizzes = quizzes.filter(category_id=selected_category)
+
+    # Filtrowanie po trudności
+    if selected_difficulty in dict(DifficultyLevel.choices).keys():
+        quizzes = quizzes.filter(difficulty=selected_difficulty)
+
+    quizzes = quizzes.order_by('-created_at')
+
+    paginator = Paginator(quizzes, 10)
     page_obj = paginator.get_page(page_number)
 
     context = {
         'page_obj': page_obj,
         'search_query': search_query,
-        'total_results': paginator.count
+        'selected_category': selected_category,
+        'selected_difficulty': selected_difficulty,
+        'categories': Category.objects.all(),
+        'difficulties': DifficultyLevel.choices,
+        'total_results': paginator.count,
     }
     return render(request, 'quiz/quiz_search.html', context)
 

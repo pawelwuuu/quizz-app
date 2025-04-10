@@ -1,42 +1,4 @@
 from django import forms
-from django.forms import modelformset_factory
-from .models import Quiz, Question, Answer
-
-class AnswerForm(forms.ModelForm):
-    class Meta:
-        model = Answer
-        fields = ['text', 'is_correct']
-
-
-class QuestionForm(forms.ModelForm):
-    class Meta:
-        model = Question
-        fields = ['text']
-
-    # Będziemy używać modelformset_factory do dynamicznego dodawania odpowiedzi
-    def __init__(self, *args, **kwargs):
-        quiz = kwargs.pop('quiz', None)  # przekazujemy quiz do formularza
-        super().__init__(*args, **kwargs)
-        if quiz:
-            self.quiz = quiz
-
-    def save(self, commit=True):
-        question = super().save(commit=False)
-        question.quiz = self.quiz
-        question.save()
-        
-        return question
-
-
-class QuizForm(forms.ModelForm):
-    class Meta:
-        model = Quiz
-        fields = ['title', 'description']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-from django import forms
 from .models import ContactMessage
 
 class ContactForm(forms.ModelForm):
