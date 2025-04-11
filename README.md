@@ -32,7 +32,7 @@ Users can create quizzes with questions and answers, assign categories and diffi
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/quiz-app.git
+git clone https://github.com/pawelwuuu/quizz-app.git
 cd quiz-app
 ```
 
