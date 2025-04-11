@@ -36,50 +36,17 @@ git clone https://github.com/yourusername/quiz-app.git
 cd quiz-app
 ```
 
-### 2. Create and activate virtual environment
+### 2. Install Python dependencies
 
 ```bash
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
+django
+django-tailwind
+django-browser-reload
 ```
-
-### 3. Install Python dependencies
-
+### 3. Run app
 ```bash
-pip install -r requirements.txt
+python manage.py runserver
 ```
-
----
-
-## 🎨 Tailwind CSS Setup
-
-### 4. Initialize Tailwind (first-time only)
-
-```bash
-python manage.py tailwind init theme
-```
-
-In `settings.py`, set:
-
-```python
-TAILWIND_APP_NAME = 'theme'
-INTERNAL_IPS = ['127.0.0.1']
-```
-
-Then run inside `theme/` directory:
-
-```bash
-npm install
-```
-
-### 5. Start Tailwind watcher (in a separate terminal tab)
-
-```bash
-python manage.py tailwind start
-```
-
-> This watches your Tailwind CSS and auto-compiles it.
-
 ---
 
 ## 🛠️ Database Setup
